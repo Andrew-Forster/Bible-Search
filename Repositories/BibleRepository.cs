@@ -27,12 +27,13 @@ public class BibleRepository : IBibleRepository
             .ToListAsync();
     }
 
-    public async Task<List<string>> GetAllBooksAsync()
+    public async Task<List<BibleBook>> GetAllBooksAsync()
     {
         return await _context.BibleBooks
-            .Select(b => b.Name)
+            .Select(b => new BibleBook { Id = b.Id, Name = b.Name }) // Include ID
             .ToListAsync();
     }
+
 
     public async Task<List<int>> GetChaptersAsync(int bookId)
     {
@@ -46,13 +47,22 @@ public class BibleRepository : IBibleRepository
     public async Task<List<BibleVerse>> GetVersesAsync(int bookId, int chapter)
     {
         return await _context.BibleVerses.Where(v => v.BookId == bookId && v.Chapter == chapter)
-            .OrderBy(v => v.VerseNumber)
             .ToListAsync(); 
     }
 
     public async Task<BibleVerse> GetVerseByIdAsync(int id)
     {
-        return await _context.BibleVerses.FirstOrDefaultAsync(v => v.Id == id);
+        return await _context.BibleVerses
+            .Include(v => v.Book)
+            .FirstOrDefaultAsync(v => v.Id == id);
+    }
+    
+    public async Task<BibleVerse> SetVerseNoteAsync(int id, string note)
+    {
+        var verse = await _context.BibleVerses.FirstOrDefaultAsync(v => v.Id == id);
+        verse.Note = note;
+        await _context.SaveChangesAsync();
+        return verse;
     }
 
 }

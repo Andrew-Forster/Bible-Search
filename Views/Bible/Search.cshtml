@@ -16,20 +16,25 @@
                 <label class="form-check-label">New Testament</label>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Search</button>
+        <button type="submit" class="btn btn-primary" id="searchButton">
+            <span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+            Search
+        </button>
     </form>
 </div>
 
 <div id="versesContainer"></div>
 
 
-<partial name="_Verses" model="Model"/>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
         $('form').on('submit', function(e) {
             e.preventDefault();
+
+            $('#spinner').show();
+            $('#searchButton').prop('disabled', true).addClass('disabled');
+
             var searchTerm = $('[name="searchTerm"]').val();
             var oldTestament = $('[name="oldTestament"]').prop('checked');
             var newTestament = $('[name="newTestament"]').prop('checked');
@@ -45,8 +50,13 @@
                 success: function(result) {
                     // Update the div with the partial view content
                     $('#versesContainer').html(result);
+                },
+                complete: function() {
+                    $('#spinner').hide();
+                    $('#searchButton').prop('disabled', false).removeClass('disabled');
                 }
             });
         });
     });
+
 </script>

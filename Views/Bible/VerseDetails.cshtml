@@ -1,7 +1,77 @@
 ﻿@model BibleVerse
-<h2>@Model.Text</h2>
-<form asp-action="AddNote" method="post">
-    <input type="hidden" name="verseId" value="@Model.Id" />
-    <textarea name="note"></textarea>
-    <button type="submit">Add Note</button>
-</form>
+
+<div class="container mt-4">
+    <div class="card shadow border-0 rounded-3">
+        <div class="card-body text-center">
+            <h5 class="card-title text-muted">@Model.Book.Name @Model.Chapter:@Model.VerseNumber</h5>
+            <p class="card-text fs-4 fw-semibold">"@Model.Text"</p>
+        </div>
+    </div>
+
+    <div class="mt-3">
+            <div class="card p-3 shadow-sm d-none" id="noteCard">
+                <p class="mb-0"><strong>Your Note:</strong></p>
+                <p class="text-muted" id="noteText">@Model.Note</p>
+                <button class="btn btn-outline-info w-100 fw-bold shadow-sm" onclick="toggleEdit()">Edit Note</button>
+            </div>
+
+            <form class="d-none" asp-action="AddNote" method="post" id="noteForm">
+                <input type="hidden" name="verseId" value="@Model.Id" />
+                <div class="mb-3">
+                    <textarea name="note" class="form-control rounded-3 p-3 shadow-sm" placeholder="Write your note here..." rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">Add Note</button>
+            </form>
+        
+    </div>
+</div>
+
+<style>
+    
+    textarea {
+        resize: none;
+        overflow: auto;
+    }
+    
+</style>
+
+<script>
+
+    $(document).ready(function () {
+        if ("@Model.Note" !== "" && "@Model.Note" !== "null") {
+            $("#noteCard").removeClass("d-none");
+        } else {
+            $("#noteForm").removeClass("d-none");
+        }
+    });
+
+    function toggleEdit() {
+        $("#noteCard").addClass("d-none");
+        $("#noteForm").removeClass("d-none");
+        $("#noteForm button").text("Update Note");
+        $("#noteForm button").removeClass("btn-primary");
+        $("#noteForm button").addClass("btn-warning");
+        $("#noteForm textarea").text("@Model.Note");
+    }
+
+    $("#noteForm").submit(function (event) {
+        event.preventDefault();
+
+        var verseId = $("input[name='verseId']").val();
+        var note = $("textarea[name='note']").val();
+
+        $.ajax({
+            url: "@Url.Action("SetVerseNote", "Bible")",
+            type: "POST",
+            data: { id: verseId, note: note },
+            success: function (note) {
+                $("#noteText").text(note);
+                $("#noteCard").removeClass("d-none");
+                $("#noteForm").addClass("d-none");
+            }
+        });
+    });
+
+
+
+</script>

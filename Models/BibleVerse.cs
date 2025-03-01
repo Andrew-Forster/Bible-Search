@@ -20,7 +20,10 @@ public class BibleVerse
     public int VerseNumber { get; set; }
 
     [Column("text")]
-    public string Text { get; set; }
+    public string Text { get; set; }    
+    
+    [Column("note")]
+    public string Note { get; set; }
     
     public BibleBook Book { get; set; }
 }

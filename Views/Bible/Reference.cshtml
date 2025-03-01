@@ -1,16 +1,92 @@
-﻿@model IEnumerable<string>
-<select id="bookDropdown">
-    @foreach (var book in Model)
-    {
-        <option value="@book">@book</option>
-    }
-</select>
-<div id="chaptersContainer"></div>
+﻿@model IEnumerable<BibleBook>
+
+
+<div class="container mt-4">
+    <div class="mb-4">
+        <label for="bookDropdown" class="form-label">Select a Book from the Bible:</label>
+        <select id="bookDropdown" class="form-select">
+            @{
+            var books = Model.ToList();
+            var separatorIndex = 39;
+            var oldTestamentBooks = books.Take(separatorIndex);
+            var newTestamentBooks = books.Skip(separatorIndex);
+            }
+            <option value="" disabled selected>Select Book</option>
+            <optgroup label="Old Testament">
+                @foreach (var book in oldTestamentBooks)
+                {
+                <option value="@book.Id">@book.Name</option>
+                }
+            </optgroup>
+
+            @if (newTestamentBooks.Any())
+            {
+            <optgroup label="New Testament">
+                @foreach (var book in newTestamentBooks)
+                {
+                <option value="@book.Id">@book.Name</option>
+                }
+            </optgroup>
+            }
+        </select>
+    </div>
+    
+    <div id="chaptersContainer" class="mb-4"></div>
+    
+    <div id="versesListContainer"></div>
+</div>
 
 <script>
-    document.getElementById("bookDropdown").addEventListener("change", function () {
-        fetch(`/Bible/Chapter?book=${this.value}`)
-            .then(response => response.text())
-            .then(html => document.getElementById("chaptersContainer").innerHTML = html);
+    $(document).ready(function () {
+        $("#bookDropdown").change(function () {
+            var bookId = $(this).val();
+            if (bookId) {
+                $.ajax({
+                    url: "@Url.Action("GetChapters", "Bible")",
+                    type: "GET",
+                    data: { bookId: bookId },
+                    success: function (chapters) {
+                        $("#versesListContainer").hide();
+                        var chaptersDropdown = '<label for="chapterDropdown" class="form-label">Select a Chapter:</label>';
+                        chaptersDropdown += '<select id="chapterDropdown" class="form-select">';
+                        chaptersDropdown += '<option value="" disabled selected>Select Chapter</option>';
+
+                        chapters.forEach(function (chapter) {
+                            chaptersDropdown += `<option value="${chapter}">Chapter ${chapter}</option>`;
+                        });
+
+                        chaptersDropdown += '</select>';
+                        $("#chaptersContainer").html(chaptersDropdown);
+
+                        $("#chapterDropdown").change(function () {
+                            var chapter = $(this).val();
+                            var book = $("#bookDropdown option:selected").text();
+                            if (chapter) {
+                                $.ajax({
+                                    url: "@Url.Action("GetVerses", "Bible")",
+                                    type: "GET",
+                                    data: { bookId: bookId, chapter: chapter },
+                                    success: function (verses) {
+                                        var versesList = `<h4>Verses from ${book} ${chapter}:</h4>`;
+                                        versesList += '<ul class="list-group">';
+                                        verses.forEach(function (verse) {
+                                            versesList += `
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Verse ${verse.verseNumber}: ${verse.text}</span>
+                                                    <a href="/Bible/VerseDetails/${verse.id}" class="btn btn-primary btn-sm">View</a>
+                                                </li>
+                                            `;
+                                        });
+                                        versesList += '</ul>';
+                                        $("#versesListContainer").html(versesList);
+                                        $("#versesListContainer").show();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
     });
 </script>
