@@ -1,0 +1,16 @@
+﻿@model IEnumerable<string>
+<select id="bookDropdown">
+    @foreach (var book in Model)
+    {
+        <option value="@book">@book</option>
+    }
+</select>
+<div id="chaptersContainer"></div>
+
+<script>
+    document.getElementById("bookDropdown").addEventListener("change", function () {
+        fetch(`/Bible/Chapter?book=${this.value}`)
+            .then(response => response.text())
+            .then(html => document.getElementById("chaptersContainer").innerHTML = html);
+    });
+</script>

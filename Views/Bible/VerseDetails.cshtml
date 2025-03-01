@@ -1,0 +1,7 @@
+﻿@model BibleVerse
+<h2>@Model.Text</h2>
+<form asp-action="AddNote" method="post">
+    <input type="hidden" name="verseId" value="@Model.Id" />
+    <textarea name="note"></textarea>
+    <button type="submit">Add Note</button>
+</form>

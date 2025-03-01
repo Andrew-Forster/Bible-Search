@@ -1,0 +1,52 @@
+﻿@model IEnumerable<BibleVerse>
+
+<div class="container mt-5">
+    <h2>Search Bible Verses</h2>
+    <form asp-action="Search" method="get" class="form-inline">
+        <div class="form-group mr-3 col-12 col-md-6">
+            <input type="text" name="searchTerm" placeholder="Enter keyword" class="form-control"/>
+        </div>
+        <div class="d-flex gap-2 my-2">
+            <div class="form-check mr-3">
+                <input type="checkbox" name="oldTestament" class="form-check-input" checked/>
+                <label class="form-check-label">Old Testament</label>
+            </div>
+            <div class="form-check mr-3">
+                <input type="checkbox" name="newTestament" class="form-check-input" checked/>
+                <label class="form-check-label">New Testament</label>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
+
+<div id="versesContainer"></div>
+
+
+<partial name="_Verses" model="Model"/>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('form').on('submit', function(e) {
+            e.preventDefault();
+            var searchTerm = $('[name="searchTerm"]').val();
+            var oldTestament = $('[name="oldTestament"]').prop('checked');
+            var newTestament = $('[name="newTestament"]').prop('checked');
+
+            $.ajax({
+                url: '/Bible/Search', // Action to send the request to
+                method: 'GET',
+                data: {
+                    searchTerm: searchTerm,
+                    oldTestament: oldTestament,
+                    newTestament: newTestament
+                },
+                success: function(result) {
+                    // Update the div with the partial view content
+                    $('#versesContainer').html(result);
+                }
+            });
+        });
+    });
+</script>

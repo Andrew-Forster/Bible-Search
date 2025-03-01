@@ -1,0 +1,54 @@
+﻿@model IEnumerable<BibleVerse>
+@{
+var searchTerm = ViewData["SearchTerm"] as string;
+}
+
+<div class="container mt-4">
+    <h3>Search Results</h3>
+    @if (Model.Any())
+    {
+    <div class="row">
+        @foreach (var verse in Model)
+        {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@verse.Book.Name</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">@verse.Chapter:@verse.VerseNumber</h6>
+                    <p class="card-text">
+                        @if (!string.IsNullOrEmpty(searchTerm))
+                        {
+                            var highlightedText = System.Text.RegularExpressions.Regex.Replace(
+                                verse.Text,
+                                $"({System.Text.RegularExpressions.Regex.Escape(searchTerm)})",
+                                "<span class=\"highlight\">$1</span>",
+                                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                            @Html.Raw(highlightedText) <!-- Render the HTML with the highlighted term -->
+                        }
+                        else
+                        {
+                            @verse.Text
+                        }
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a class="btn btn-primary" asp-action="VerseDetails" asp-route-id="@verse.Id">View Verse</a>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+    }
+    else
+    {
+    <p>No verses found matching your search criteria.</p>
+    }
+</div>
+
+<style>
+    .highlight {
+        background-color: yellow;
+        font-weight: 500;
+    }
+</style>
